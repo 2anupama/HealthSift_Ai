@@ -10,11 +10,49 @@ import pandas as pd
 from src.logger import get_logger
 
 logger = get_logger(__name__)
+BOM_MARKER = "\ufeff"
 
 
 def _normalize_column_name(column_name: str) -> str:
     """Normalize column names: trim, lowercase, and replace spaces with underscores."""
     return re.sub(r"\s+", "_", column_name.strip().lower())
+
+
+def _remove_bom_artifacts(df: pd.DataFrame) -> tuple[pd.DataFrame, int]:
+    """Remove UTF-8 BOM artifacts from column names and string cells."""
+    cleaned_df = df.copy()
+    affected = 0
+
+    new_columns: list[str] = []
+    for column in cleaned_df.columns:
+        normalized = str(column).replace(BOM_MARKER, "").strip()
+        if str(column) != normalized:
+            affected += 1
+        new_columns.append(normalized)
+    cleaned_df.columns = new_columns
+
+    for column in cleaned_df.select_dtypes(include=["object", "string"]).columns:
+        series_as_string = cleaned_df[column].astype("string")
+        replaced = series_as_string.str.replace(BOM_MARKER, "", regex=False)
+        changed_mask = series_as_string.notna() & (replaced != series_as_string)
+        affected += int(changed_mask.sum())
+        cleaned_df[column] = replaced
+
+    return cleaned_df, affected
+
+
+def _flatten_merged_cell_artifacts(df: pd.DataFrame) -> tuple[pd.DataFrame, int]:
+    """Flatten likely merged-cell artifacts by forward-filling column gaps."""
+    flattened_df = df.copy()
+    filled_count = 0
+
+    for column in flattened_df.columns:
+        before_na = int(flattened_df[column].isna().sum())
+        flattened_df[column] = flattened_df[column].ffill()
+        after_na = int(flattened_df[column].isna().sum())
+        filled_count += max(0, before_na - after_na)
+
+    return flattened_df, filled_count
 
 
 def clean(df: pd.DataFrame) -> pd.DataFrame:
@@ -33,6 +71,15 @@ def clean(df: pd.DataFrame) -> pd.DataFrame:
     """
     cleaned_df = df.copy()
     logger.info("Starting data cleaning pipeline for %d rows.", len(cleaned_df))
+
+    # 0) Handle UTF-8 BOM artifacts and flatten merged-cell gaps from Excel-style sheets.
+    cleaned_df, bom_affected_count = _remove_bom_artifacts(cleaned_df)
+    cleaned_df, merged_fill_count = _flatten_merged_cell_artifacts(cleaned_df)
+    logger.info(
+        "Step 0 complete: cleaned BOM artifacts for %d field(s); flattened merged-cell gaps for %d field(s).",
+        bom_affected_count,
+        merged_fill_count,
+    )
 
     # 1) Strip leading/trailing whitespace from all string columns.
     string_columns = cleaned_df.select_dtypes(include=["object", "string"]).columns

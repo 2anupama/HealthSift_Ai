@@ -6,7 +6,7 @@ import shutil
 import time
 from pathlib import Path
 
-from config import ERROR_DIR, INPUT_DIR
+from config import ERROR_DIR, INPUT_DIR, validate_environment
 from src import classifier, cleaning, ingestion, output, validation
 from src.logger import get_logger
 
@@ -27,25 +27,70 @@ def _move_file_to_error(file_path: Path) -> None:
     logger.error("Moved file to error directory: %s", destination)
 
 
+def _log_and_print_file_summary(
+    file_path: Path,
+    total_records: int,
+    category_counts: dict[str, int],
+    source_counts: dict[str, int],
+    elapsed_seconds: float,
+) -> None:
+    """Print and log a processing summary without sensitive field values."""
+    summary_lines = [
+        f"Summary for {file_path.name}",
+        f"Total records processed: {total_records}",
+        (
+            "Health categories: "
+            f"Diabetic={category_counts.get('Diabetic', 0)}, "
+            f"Pregnant={category_counts.get('Pregnant', 0)}, "
+            f"Diabetic & Pregnant={category_counts.get('Diabetic & Pregnant', 0)}, "
+            f"Neither={category_counts.get('Neither', 0)}"
+        ),
+        (
+            "Classification source: "
+            f"rule-based={source_counts.get('rule-based', 0)}, "
+            f"llm={source_counts.get('llm', 0)}"
+        ),
+        f"Processing time: {elapsed_seconds:.2f}s",
+    ]
+
+    summary_text = "\n".join(summary_lines)
+    print(summary_text)
+    logger.info(summary_text)
+
+
 def process_file(filepath: str | Path) -> None:
     """Run the full HealthSift processing pipeline for one file."""
     file_path = Path(filepath)
     start_time = time.perf_counter()
+    total_records = 0
+    category_counts = {"Diabetic": 0, "Pregnant": 0, "Diabetic & Pregnant": 0, "Neither": 0}
+    source_counts = {"rule-based": 0, "llm": 0}
 
     logger.info("Starting pipeline for file: %s", file_path)
 
     try:
         dataframe = ingestion.load_file(file_path)
+        total_records = len(dataframe)
 
         is_valid, validation_error = validation.validate(dataframe, file_path)
         if not is_valid:
             logger.warning("Validation failed for %s: %s", file_path, validation_error)
-            elapsed = time.perf_counter() - start_time
-            logger.info("Processing time for %s: %.2f seconds", file_path.name, elapsed)
             return
 
         cleaned_df = cleaning.clean(dataframe)
         classified_df = classifier.classify_dataframe(cleaned_df)
+        category_counts = {
+            "Diabetic": int((classified_df["health_category"] == "Diabetic").sum()),
+            "Pregnant": int((classified_df["health_category"] == "Pregnant").sum()),
+            "Diabetic & Pregnant": int(
+                (classified_df["health_category"] == "Diabetic & Pregnant").sum()
+            ),
+            "Neither": int((classified_df["health_category"] == "Neither").sum()),
+        }
+        source_counts = {
+            "rule-based": int((classified_df["classification_source"] == "rule-based").sum()),
+            "llm": int((classified_df["classification_source"] == "llm").sum()),
+        }
         saved_path = output.save_output(classified_df, file_path)
 
         if saved_path is None:
@@ -60,6 +105,13 @@ def process_file(filepath: str | Path) -> None:
             logger.exception("Failed to move errored file %s: %s", file_path, move_exc)
     finally:
         elapsed = time.perf_counter() - start_time
+        _log_and_print_file_summary(
+            file_path=file_path,
+            total_records=total_records,
+            category_counts=category_counts,
+            source_counts=source_counts,
+            elapsed_seconds=elapsed,
+        )
         logger.info("Processing time for %s: %.2f seconds", file_path.name, elapsed)
 
 
@@ -90,6 +142,7 @@ def main() -> None:
 
     observer = None
     try:
+        validate_environment()
         _process_backlog()
 
         def _safe_process_file(file_path: Path) -> None:

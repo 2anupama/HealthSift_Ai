@@ -36,7 +36,7 @@ def load_file(filepath: str | Path) -> pd.DataFrame:
         raise ValueError(f"Unsupported file format: {file_path.name}")
 
     if suffix == ".csv":
-        dataframe = pd.read_csv(file_path)
+        dataframe = pd.read_csv(file_path, encoding="utf-8-sig")
     else:
         dataframe = pd.read_excel(file_path)
 

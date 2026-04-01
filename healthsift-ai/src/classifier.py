@@ -49,6 +49,9 @@ def classify_dataframe(df: pd.DataFrame) -> pd.DataFrame:
 
     classified_df = df.copy()
     classified_df["health_category"] = classified_df[diagnosis_column].apply(rule_based_classify)
+    classified_df["classification_source"] = classified_df["health_category"].apply(
+        lambda category: "rule-based" if category is not None else None
+    )
 
     llm_pending = classified_df[classified_df["health_category"].isna()]
     classified_df.attrs["llm_pending_indices"] = llm_pending.index.tolist()
@@ -60,15 +63,20 @@ def classify_dataframe(df: pd.DataFrame) -> pd.DataFrame:
         classified_df.loc[llm_pending.index, "health_category"] = llm_pending[diagnosis_column].apply(
             lambda text: query_ollama(str(text))
         )
+        classified_df.loc[llm_pending.index, "classification_source"] = "llm"
 
     diabetic_count = int((classified_df["health_category"] == "Diabetic").sum())
     pregnant_count = int((classified_df["health_category"] == "Pregnant").sum())
     both_count = int((classified_df["health_category"] == "Diabetic & Pregnant").sum())
     neither_count = int((classified_df["health_category"] == "Neither").sum())
+    source_rules_count = int((classified_df["classification_source"] == "rule-based").sum())
+    source_llm_count = int((classified_df["classification_source"] == "llm").sum())
 
     logger.info("Classification complete.")
     logger.info("Resolved by rules: %d", rules_resolved_count)
     logger.info("Sent to LLM: %d", llm_pending_count)
+    logger.info("Classification source | rule-based: %d", source_rules_count)
+    logger.info("Classification source | llm: %d", source_llm_count)
     logger.info("Category counts | Diabetic: %d", diabetic_count)
     logger.info("Category counts | Pregnant: %d", pregnant_count)
     logger.info("Category counts | Diabetic & Pregnant: %d", both_count)

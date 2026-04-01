@@ -67,10 +67,7 @@ def query_ollama(diagnosis_text: str) -> str:
             category = _normalize_category(model_reply)
 
             if category not in VALID_CATEGORIES:
-                logger.warning(
-                    "Ollama returned unexpected category '%s'; defaulting to Neither.",
-                    model_reply,
-                )
+                logger.warning("Ollama returned unexpected category format; defaulting to Neither.")
                 return "Neither"
 
             logger.info("Ollama classification resolved as: %s", category)
