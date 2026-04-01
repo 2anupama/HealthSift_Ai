@@ -10,6 +10,11 @@ INPUT_DIR = PROJECT_ROOT / "input"
 PROCESSED_DIR = PROJECT_ROOT / "processed"
 ERROR_DIR = PROJECT_ROOT / "error"
 LOG_DIR = PROJECT_ROOT / "logs"
+PROCESSED_INPUT_DIR = PROJECT_ROOT / "processed_input"
+
+# What to do with the original file after successful output save.
+# Supported values: "archive", "delete"
+INPUT_FILE_SUCCESS_ACTION = "archive"
 
 # Input validation requirements.
 REQUIRED_COLUMNS = ["Patient ID", "Diagnosis"]
