@@ -1,0 +1,51 @@
+Patient ID,Age,Gender,Diagnosis
+P0001,50,m,
+P0002,thirty-five,Male,"Gestational diabetes, insulin therapy"
+P0003,27,F,unknown
+P0004,45,unknown,Metformin 500mg twice daily
+P0005,33,female,
+P0006,29,m,"Gestational diabetes, insulin therapy"
+P0007,27,unknown,N/A
+P0008,29,unknown,"Gestational diabetes, insulin therapy"
+P0009,thirty-five,unknown,Prenatal vitamins started
+P0010,27,female,N/A
+P0011,38,m,"28 weeks pregnant, iron supplements"
+P0012,thirty-five,female,Type 2 diabetes follow-up
+P0013,38,F,"Gestational diabetes, insulin therapy"
+P0014,42,m,Metformin 500mg twice daily
+P0015,n/a,m,Type 2 diabetes follow-up
+P0016,42,unknown,"CBC test ordered, follow up in 2 weeks"
+P0017,29,female,Glipizide dose adjusted
+P0018,45,female,Metformin 500mg twice daily
+P0019,,Male,blood pressure review
+P0020,33,Male,N/A
+P0021,27,m,
+P0022,50,F,"CBC test ordered, follow up in 2 weeks"
+P0023,45,F,Metformin 500mg twice daily
+P0024,n/a,Male,Routine annual checkup
+P0025,50,Male,"28 weeks pregnant, iron supplements"
+P0026,42,Male,"Gestational diabetes, insulin therapy"
+P0027,50,Male,unknown
+P0028,50,m,N/A
+P0029,50,F,Glipizide dose adjusted
+P0030,thirty-five,F,"28 weeks pregnant, iron supplements"
+P0031,forty,female,"CBC test ordered, follow up in 2 weeks"
+P0032,50,unknown,"Gestational diabetes, insulin therapy"
+P0033,50,Male,
+P0034,27,m,Type 2 diabetes follow-up
+P0035,n/a,Male,Metformin 500mg twice daily
+P0036,27,unknown,unknown
+P0037,42,F,blood pressure review
+P0038,forty,female,blood pressure review
+P0039,forty,F,"CBC test ordered, follow up in 2 weeks"
+P0040,31,F,unknown
+P0041,,unknown,"CBC test ordered, follow up in 2 weeks"
+P0042,thirty-five,unknown,Prenatal vitamins started
+P0043,33,female,Type 2 diabetes follow-up
+P0044,27,F,Glipizide dose adjusted
+P0045,forty,m,
+P0004,45,unknown,Metformin 500mg twice daily
+P0011,38,m,"28 weeks pregnant, iron supplements"
+P0021,27,m,
+P0001,50,m,
+P0002,thirty-five,Male,"Gestational diabetes, insulin therapy"
