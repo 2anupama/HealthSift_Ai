@@ -24,10 +24,16 @@ DIABETIC_KEYWORDS = [
     "diabetic",
     "type 1 diabetes",
     "type 2 diabetes",
+    "type 1",
+    "type 2",
     "gestational diabetes",
     "hyperglycemia",
     "insulin",
     "hba1c",
+    "metformin",
+    "glipizide",
+    "t1dm",
+    "t2dm",
 ]
 
 PREGNANT_KEYWORDS = [
@@ -36,7 +42,10 @@ PREGNANT_KEYWORDS = [
     "antenatal",
     "prenatal",
     "gestation",
+    "gestational",
     "obstetric",
     "trimester",
     "expecting",
+    "gravida",
+    "maternity",
 ]
